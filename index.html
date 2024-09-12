@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT WebSocket Client</title>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <style>
+        /* Basic styles for buttons */
+        .file-button {
+            margin: 5px;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        /* Hide the menu initially */
+        #menu {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+	<div id="loginForm">
+        <h1>Login to MQTT</h1>
+        <form id="mqttLogin">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <br>
+            <button type="submit">Connect</button>
+        </form>
+        <p id="status">Please log in to connect.</p>
+    </div>
+	
+	<div id="menu">
+        <h1>MQTT Control Panel</h1>
+		<!-- Buttons for sending MQTT commands -->
+		<button class="file-button" onclick="sendCommand('files')">Get SD Folder Contents</button>
+		
+		<h3>Servo Control</h3>
+		<button class="file-button" onclick="sendCommand('up')">Move Servo Up</button>
+		<button class="file-button" onclick="sendCommand('down')">Move Servo Down</button>
+		
+		<h3>Music Control</h3>
+		<button class="file-button" onclick="sendCommand('+')">Volume +</button>
+		<button class="file-button" onclick="sendCommand('-')">Volume -</button>
+		<button class="file-button" onclick="sendCommand('stop')">Stop Music</button>
+		<button class="file-button" onclick="sendCommand('mute')">Mute Music</button>
+		<button class="file-button" onclick="sendCommand('unmute')">Unmute Music</button>
+		<button class="file-button" onclick="sendCommand('pause')">Pause/Resume Music</button>
+	
+
+		<!-- Display connection status -->
+		<p id="status"></p>
+
+		<!-- Display received messages -->
+		<div>
+			<h2>Latest Message from Topic:</h2>
+			<div id="messages">No messages yet.</div>
+		</div>
+		
+		<!-- Display file buttons -->
+		<div id="fileButtons">
+			<h2>File Buttons:</h2>
+		</div>
+	</div>
+
+    <script>
+        let client;
+
+        // Function to connect to MQTT broker
+        function connectMQTT(username, password) {
+            const options = {
+                username: username,
+                password: password,
+                protocol: 'wss',            // Secure WebSocket
+                clientId: 'my-web-client', // Unique client ID
+                clean: true                 // Clean session
+            };
+
+            // Replace with your MQTT broker's WebSocket URL
+            const brokerUrl = 'wss://ca018588.ala.us-east-1.emqxsl.com:8084/mqtt'; 
+            client = mqtt.connect(brokerUrl, options);
+
+            client.on('connect', function () {
+                document.getElementById('status').innerHTML = "Connected securely to MQTT broker!";
+                document.getElementById('loginForm').style.display = 'none'; // Hide login form
+                document.getElementById('menu').style.display = 'block';    // Show menu
+                console.log("Connected to MQTT broker");
+
+                // Subscribe to the topic to receive messages
+                const topicToSubscribe = 'dispenser/responses';
+                client.subscribe(topicToSubscribe, function (err) {
+                    if (!err) {
+                        console.log("Subscribed to topic:", topicToSubscribe);
+                    }
+                });
+            });
+
+            client.on('message', function (topic, message) {
+                const msg = message.toString();
+                console.log(`Message received on topic "${topic}": ${msg}`);
+                // Update the messages div to show only the latest message
+                const messagesDiv = document.getElementById('messages');
+                messagesDiv.textContent = `${msg}`;
+
+                // If the message starts with "Files List:"
+                if (msg.startsWith("Files List:")) {
+                    createFileButtons(msg);
+                }
+            });
+
+            client.on('offline', function () {
+                document.getElementById('status').innerHTML = "Disconnected from MQTT broker!";
+                console.log("Disconnected from MQTT broker");
+            });
+        }
+
+        // Handle login form submission
+        document.getElementById('mqttLogin').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent the form from submitting normally
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            connectMQTT(username, password);
+        });
+
+        // Function to send a command via MQTT
+        function sendCommand(command) {
+            const topicToPublish = 'dispenser/commands'; // Topic to publish to
+            const message = command;
+            client.publish(topicToPublish, message, function (err) {
+                if (!err) {
+                    console.log(`Message "${message}" sent on topic "${topicToPublish}"`);
+                } else {
+                    console.log("Error sending message: ", err);
+                }
+            });
+        }
+
+        // Function to send a custom command from the input field
+        function sendCustomCommand() {
+            const customCommand = document.getElementById('customCommand').value;
+            if (customCommand.trim()) { // Check if the input is not empty
+                sendCommand(customCommand);
+                document.getElementById('customCommand').value = ''; // Clear the input field
+            } else {
+                alert("Please enter a command.");
+            }
+        }
+
+        // Function to create buttons for each file
+        function createFileButtons(message) {
+            const fileButtonsDiv = document.getElementById('fileButtons');
+            fileButtonsDiv.innerHTML = '<h2>File Buttons:</h2>'; // Clear previous buttons
+
+            // Remove "Files List:" prefix
+            const fileList = message.substring("Files List:".length).trim();
+
+            // Split into lines
+            const fileLines = fileList.split('\n');
+            fileLines.forEach(line => {
+                // Extract key and file name
+                const parts = line.split(' - ');
+                if (parts.length === 2) {
+                    const key = parts[0].trim();
+                    const fileName = parts[1].trim();
+
+                    // Ignore file keys 0, 1, and 2
+                    if (key !== '0' && key !== '1' && key !== '2') {
+                        // Create a button for each file
+                        const button = document.createElement('button');
+                        button.textContent = fileName;
+                        button.className = 'file-button';
+                        button.onclick = () => sendCommand(key); // Use key as the message
+                        fileButtonsDiv.appendChild(button);
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
