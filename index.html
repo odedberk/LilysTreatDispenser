@@ -5,22 +5,207 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MQTT WebSocket Client</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
     <style>
-        /* Basic styles for buttons */
-        .file-button {
-            margin: 5px;
-            padding: 10px;
-            cursor: pointer;
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
-        /* Hide the menu initially */
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #444;
+            text-align: center;
+        }
+
+        /* Login Form Styles */
+        #loginForm {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        #loginForm input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        #loginForm button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #loginForm button:hover {
+            background-color: #0056b3;
+        }
+
+        #status {
+            text-align: center;
+            margin-top: 10px;
+            color: #555;
+        }
+
+        /* Menu Styles */
         #menu {
             display: none;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            margin: 20px 0;
+        }
+
+        /* Common button styles for music and servo controls */
+        .controls {
+            display: flex;
+            justify-content: space-evenly;
+            margin: 20px 0;
+        }
+
+        .controls button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+			filter: drop-shadow(0px 2px 1px black);
+        }
+
+        .controls button i {
+            font-size: 24px;
+        }
+
+        .controls button:hover {
+            background-color: #218838;
+            transform: scale(1.1);
+        }
+
+        .controls button:active {
+            transform: scale(0.95);
+        }
+
+        /* Music control icons */
+        .music-controls i {
+            font-size: 24px;
+        }
+		
+        /* Mute button styles */
+        .mute-button.active {
+            background-color: red;
+			transform: scale(0.95);
+			filter: drop-shadow(-1px 0px 2px black);
+        }
+		
+		/* When mute button is active, keep red on hover */
+		.mute-button.active:hover {
+			background-color: red;
+			transform: scale(1.1);
+		}
+
+		/* Regular hover for non-active state */
+		.mute-button:hover {
+			background-color: #218838;
+		}
+
+        /* Servo control icons */
+        .servo-controls i {
+            font-size: 24px;
+        }
+
+        /* File button styles */
+		.file-button {
+			background-color: #007BFF; /* Primary background color */
+			color: white;
+			border: none;
+			border-radius: 8px;
+			padding: 12px 20px;
+			margin: 10px 0;
+			font-size: 16px;
+			cursor: pointer;
+			transition: background-color 0.3s ease, box-shadow 0.3s ease;
+			width: 100%; /* Ensures the button spans the available width */
+			text-align: left; /* Aligns the text to the left */
+		}
+
+		.file-button:hover {
+			background-color: #1d64b1; /* Darker shade on hover */
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow on hover */
+		}
+
+		.file-button:active {
+			transform: scale(0.98); /* Slight scale-down effect when clicked */
+		}
+
+		.file-button i {
+			margin-right: 10px; /* Spacing between icon and text */
+		}
+
+		/* File button container for responsiveness */
+		#fileButtons {
+			display: flex;
+			flex-direction: column;
+			align-items: stretch; /* Make the buttons take full width */
+			margin-top: 20px;
+		}
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+                height: auto;
+            }
+
+            #menu button, #loginForm button {
+                font-size: 14px;
+                padding: 10px;
+            }
+
+            .music-controls button {
+                width: 50px;
+                height: 50px;
+                font-size: 18px;
+            }
         }
     </style>
 </head>
 <body>
-	<div id="loginForm">
+    <div id="loginForm">
         <h1>Login to MQTT</h1>
         <form id="mqttLogin">
             <label for="username">Username:</label>
@@ -33,42 +218,70 @@
         </form>
         <p id="status">Please log in to connect.</p>
     </div>
-	
-	<div id="menu">
-        <h1>MQTT Control Panel</h1>
-		<!-- Buttons for sending MQTT commands -->
-		<button class="file-button" onclick="sendCommand('files')">Get SD Folder Contents</button>
-		
-		<h3>Servo Control</h3>
-		<button class="file-button" onclick="sendCommand('up')">Move Servo Up</button>
-		<button class="file-button" onclick="sendCommand('down')">Move Servo Down</button>
-		
-		<h3>Music Control</h3>
-		<button class="file-button" onclick="sendCommand('+')">Volume +</button>
-		<button class="file-button" onclick="sendCommand('-')">Volume -</button>
-		<button class="file-button" onclick="sendCommand('stop')">Stop Music</button>
-		<button class="file-button" onclick="sendCommand('mute')">Mute Music</button>
-		<button class="file-button" onclick="sendCommand('unmute')">Unmute Music</button>
-		<button class="file-button" onclick="sendCommand('pause')">Pause/Resume Music</button>
-	
 
-		<!-- Display connection status -->
-		<p id="status"></p>
+    <div id="menu">
+        <h1>Lilys Treat Dispenser Control Panel</h1>
 
-		<!-- Display received messages -->
-		<div>
-			<h2>Latest Message from Topic:</h2>
-			<div id="messages">No messages yet.</div>
-		</div>
-		
-		<!-- Display file buttons -->
-		<div id="fileButtons">
-			<h2>File Buttons:</h2>
-		</div>
-	</div>
+        <!-- Servo Controls Section -->
+        <h3>Motor Control</h3>
+        <div class="controls servo-controls">
+            <button onclick="sendCommand('up')"><i class="fas fa-undo"></i></button> <!-- Counter-clockwise -->
+            <button onclick="sendCommand('down')"><i class="fas fa-redo"></i></button> <!-- Clockwise -->
+        </div>
+
+        <!-- Music Controls Section -->
+        <h3>Music Control</h3>
+        <div class="controls music-controls">
+            <button id="pauseButton" class="mute-button" onclick="togglePause()"><i class="fas fa-pause"></i></button>
+            <button onclick="sendCommand('stop')"><i class="fas fa-stop"></i></button>
+            <button onclick="sendCommand('+')"><i class="fas fa-volume-up"></i></button>
+            <button onclick="sendCommand('-')"><i class="fas fa-volume-down"></i></button>
+            <button id="muteButton" class="mute-button" onclick="toggleMute()"><i class="fas fa-volume-mute"></i></button>
+        </div>
+
+        <!-- Display received messages -->
+        <div>
+            <h2>Latest Message from Topic:</h2>
+            <div id="messages">No messages yet.</div>
+        </div>
+
+        <!-- Display file buttons -->
+        <div id="fileButtons">
+            <h2>Play File:</h2><br>
+        </div>
+    </div>
 
     <script>
         let client;
+		let isMuted = false;
+		let isPaused = false;
+
+		// Toggle mute button between mute and unmute
+        function toggleMute() {
+            const muteButton = document.getElementById('muteButton');
+            if (isMuted) {
+                sendCommand('unmute');
+                muteButton.classList.remove('active');
+                isMuted = false;
+            } else {
+                sendCommand('mute');
+                muteButton.classList.add('active');
+                isMuted = true;
+            }
+        }
+		// Toggle mute button between mute and unmute
+        function togglePause() {
+            const pauseButton = document.getElementById('pauseButton');
+            if (isPaused) {
+                sendCommand('pause');
+                pauseButton.classList.remove('active');
+                isPaused = false;
+            } else {
+                sendCommand('pause');
+                pauseButton.classList.add('active');
+                isPaused = true;
+            }
+        }
 
         // Function to connect to MQTT broker
         function connectMQTT(username, password) {
@@ -76,21 +289,20 @@
                 username: username,
                 password: password,
                 protocol: 'wss',            // Secure WebSocket
-                clientId: 'my-web-client', // Unique client ID
-                clean: true                 // Clean session
+                clientId: 'my-web-client',   // Unique client ID
+                clean: true                  // Clean session
             };
 
-            // Replace with your MQTT broker's WebSocket URL
-            const brokerUrl = 'wss://ca018588.ala.us-east-1.emqxsl.com:8084/mqtt'; 
+            const brokerUrl = 'wss://ca018588.ala.us-east-1.emqxsl.com:8084/mqtt';
             client = mqtt.connect(brokerUrl, options);
 
             client.on('connect', function () {
+				sendCommand("files");
                 document.getElementById('status').innerHTML = "Connected securely to MQTT broker!";
                 document.getElementById('loginForm').style.display = 'none'; // Hide login form
                 document.getElementById('menu').style.display = 'block';    // Show menu
                 console.log("Connected to MQTT broker");
 
-                // Subscribe to the topic to receive messages
                 const topicToSubscribe = 'dispenser/responses';
                 client.subscribe(topicToSubscribe, function (err) {
                     if (!err) {
@@ -102,14 +314,15 @@
             client.on('message', function (topic, message) {
                 const msg = message.toString();
                 console.log(`Message received on topic "${topic}": ${msg}`);
-                // Update the messages div to show only the latest message
-                const messagesDiv = document.getElementById('messages');
-                messagesDiv.textContent = `${msg}`;
 
-                // If the message starts with "Files List:"
                 if (msg.startsWith("Files List:")) {
                     createFileButtons(msg);
+					return;
                 }
+				
+                // Update the messages div to show only the latest message
+                document.getElementById('messages').textContent = `${msg}`;
+
             });
 
             client.on('offline', function () {
@@ -120,7 +333,7 @@
 
         // Handle login form submission
         document.getElementById('mqttLogin').addEventListener('submit', function (event) {
-            event.preventDefault(); // Prevent the form from submitting normally
+            event.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             connectMQTT(username, password);
@@ -134,46 +347,28 @@
                 if (!err) {
                     console.log(`Message "${message}" sent on topic "${topicToPublish}"`);
                 } else {
-                    console.log("Error sending message: ", err);
+                    console.log("Error sending message:", err);
                 }
             });
-        }
-
-        // Function to send a custom command from the input field
-        function sendCustomCommand() {
-            const customCommand = document.getElementById('customCommand').value;
-            if (customCommand.trim()) { // Check if the input is not empty
-                sendCommand(customCommand);
-                document.getElementById('customCommand').value = ''; // Clear the input field
-            } else {
-                alert("Please enter a command.");
-            }
         }
 
         // Function to create buttons for each file
         function createFileButtons(message) {
             const fileButtonsDiv = document.getElementById('fileButtons');
-            fileButtonsDiv.innerHTML = '<h2>File Buttons:</h2>'; // Clear previous buttons
+            fileButtonsDiv.innerHTML = '<h2>Play Song</h2>';
 
-            // Remove "Files List:" prefix
             const fileList = message.substring("Files List:".length).trim();
-
-            // Split into lines
             const fileLines = fileList.split('\n');
             fileLines.forEach(line => {
-                // Extract key and file name
                 const parts = line.split(' - ');
                 if (parts.length === 2) {
                     const key = parts[0].trim();
                     const fileName = parts[1].trim();
-
-                    // Ignore file keys 0, 1, and 2
                     if (key !== '0' && key !== '1' && key !== '2') {
-                        // Create a button for each file
                         const button = document.createElement('button');
-                        button.textContent = fileName;
+                        button.textContent = fileName.replace('.mp3', '');
                         button.className = 'file-button';
-                        button.onclick = () => sendCommand(key); // Use key as the message
+                        button.onclick = () => sendCommand(key);
                         fileButtonsDiv.appendChild(button);
                     }
                 }
