@@ -369,26 +369,37 @@
 
         // Function to create buttons for each file
         function createFileButtons(message) {
-            const fileButtonsDiv = document.getElementById('fileButtons');
-            fileButtonsDiv.innerHTML = '<h2>Play Song</h2>';
+			const fileButtonsDiv = document.getElementById('fileButtons');
+			fileButtonsDiv.innerHTML = '<h2>Play A Song:</h2>'; 
 
-            const fileList = message.substring("Files List:".length).trim();
-            const fileLines = fileList.split('\n');
-            fileLines.forEach(line => {
-                const parts = line.split(' - ');
-                if (parts.length === 2) {
-                    const key = parts[0].trim();
-                    const fileName = parts[1].trim();
-                    if (key !== '0' && key !== '1' && key !== '2') {
-                        const button = document.createElement('button');
-                        button.textContent = fileName.replace('.mp3', '');
-                        button.className = 'file-button';
-                        button.onclick = () => sendCommand(key);
-                        fileButtonsDiv.appendChild(button);
-                    }
-                }
-            });
-        }
+			// Remove "Files List:" prefix
+			const fileList = message.substring("Files List:".length).trim();
+
+			// Split into lines
+			const fileLines = fileList.split('\n');
+			fileLines.forEach(line => {
+				// Extract key and file name based on the first "-"
+				const firstDashIndex = line.indexOf(' - ');
+				if (firstDashIndex !== -1) {
+					const key = line.substring(0, firstDashIndex).trim();
+					const fileName = line.substring(firstDashIndex + 3).trim(); // Everything after the first "-"
+					
+					// Create a button for each file
+					const button = document.createElement('button');
+					button.textContent = fileName.replace('.mp3', ''); // Optionally remove .mp3 extension
+					button.className = 'file-button';
+					button.onclick = () => {
+						if (isPaused) {
+							const pauseButton = document.getElementById('pauseButton');
+							pauseButton.classList.remove('active');
+							isPaused = !isPaused;
+						}						
+						sendCommand(key);
+					}; // Use key as the message
+					fileButtonsDiv.appendChild(button);					
+				}
+			});
+		}
     </script>
 </body>
 </html>
