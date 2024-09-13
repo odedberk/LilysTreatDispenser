@@ -19,6 +19,23 @@
             align-items: center;
             height: 100vh;
         }
+		
+		/* Terminal-like message box */
+		#messages {
+			background-color: black; /* Black background */
+			color: #00FF00; /* Green text */
+			padding: 15px;
+			border-radius: 8px;
+			font-family: "Courier New", Courier, monospace; /* Terminal font style */
+			font-size: 14px;
+			width: 95%;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+			margin-bottom: 20px;
+			white-space: pre-line; /* Preserves line breaks */
+			overflow-y: auto; /* Allows scroll if content overflows */
+			max-height: 200px; /* Limit height to prevent too much content */
+		}
+		
 
         h1 {
             color: #333;
@@ -37,12 +54,12 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
+            width: 95%;
             max-width: 400px;
         }
 
         #loginForm input {
-            width: 100%;
+            width: 95%;
             padding: 10px;
             margin: 10px 0;
             border: 1px solid #ddd;
@@ -206,7 +223,8 @@
 </head>
 <body>
     <div id="loginForm">
-        <h1>Login to MQTT</h1>
+		<h1>Lilys Treat Dispenser Control Panel</h1>
+        <h2>Login</h2>
         <form id="mqttLogin">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required>
@@ -221,7 +239,10 @@
 
     <div id="menu">
         <h1>Lilys Treat Dispenser Control Panel</h1>
-
+		
+		<!-- Display Response Messages -->
+		<div id="messages">No messages yet.</div>
+		
         <!-- Servo Controls Section -->
         <h3>Motor Control</h3>
         <div class="controls servo-controls">
@@ -239,15 +260,9 @@
             <button id="muteButton" class="mute-button" onclick="toggleMute()"><i class="fas fa-volume-mute"></i></button>
         </div>
 
-        <!-- Display received messages -->
-        <div>
-            <h2>Latest Message from Topic:</h2>
-            <div id="messages">No messages yet.</div>
-        </div>
-
         <!-- Display file buttons -->
         <div id="fileButtons">
-            <h2>Play File:</h2><br>
+            <h2>Play A Song</h2><br>
         </div>
     </div>
 
