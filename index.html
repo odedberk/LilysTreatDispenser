@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MQTT WebSocket Client</title>
+    <title>Lily's Treat Dispenser</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <!-- Font Awesome for icons -->
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
@@ -21,6 +21,7 @@
             align-items: center;
             height: 100vh;
 			touch-action: manipulation; /* Disables double-tap to zoom */
+			overflow: hidden;
         }
 		
 		/* Terminal-like message box */
@@ -226,7 +227,7 @@
 </head>
 <body>
     <div id="loginForm">
-		<h1>Lilys Treat Dispenser Control Panel</h1>
+		<h1>Lily's Treat Dispenser Control Panel</h1>
         <h2>Login</h2>
         <form id="mqttLogin">
             <label for="username">Username:</label>
@@ -241,7 +242,7 @@
     </div>
 
     <div id="menu">
-        <h1>Lilys Treat Dispenser Control Panel</h1>
+        <h1>Lily's Treat Dispenser Control Panel</h1>
 		
 		<!-- Display Response Messages -->
 		<div id="messages">No messages yet.</div>
