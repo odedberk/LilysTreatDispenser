@@ -1,0 +1,20 @@
+{
+  "name": Lily's Treat Dispenser",
+  "short_name": "Lily's Dispenser",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "lily.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "lily.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
