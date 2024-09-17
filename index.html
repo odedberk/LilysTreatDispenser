@@ -258,7 +258,6 @@
         <h3>Motor Control</h3>
         <div class="controls servo-controls">
             <button onclick="sendCommand('retract')"><i class="fas fa-arrows-rotate"></i></button> <!-- Retract to 0 -->
-<!-- 			<button onclick="sendCommand('down')"><i class="fas fa-undo"></i></button> <!-- Counter-clockwise --> -->
             <button onclick="sendCommand('up')"><i class="fas fa-bone"></i></button> <!-- Clockwise -->            
         </div>
 
@@ -391,8 +390,7 @@
         // Function to create buttons for each file
         function createFileButtons(message) {
 			const fileButtonsDiv = document.getElementById('fileButtons');
-			fileButtonsDiv.innerHTML = '<h2>Play A Song:</h2>'; 
-
+		
 			// Remove "Files List:" prefix
 			const fileList = message.substring("Files List:".length).trim();
 
